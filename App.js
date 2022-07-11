@@ -23,6 +23,7 @@ const App = () => {
   const [isJump, setIsJump] = useState(false);
   const [direction, setDirection] = useState(directions.right);
   const [translateY, setTranslateY] = useState(new Animated.Value(0));
+  const [translateXTrump, setTranslateTrump] = useState(new Animated.Value(0));
   const [translateX, setTranslateX] = useState(0);
   const [isMoving, setMoving] = useState(false);
 
@@ -61,10 +62,26 @@ const App = () => {
     }
   }, [isJump, startJumping]);
 
+  useEffect(() => {
+    animateTrump();
+  }, [animateTrump]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const animateTrump = useCallback(() => {
+    Animated.sequence([
+      Animated.delay(1000),
+      Animated.timing(translateXTrump, {
+        toValue: Math.floor(Math.random() * (widthScreen - 30) + 10),
+        duration: 2000,
+      }),
+    ]).start(() => {
+      animateTrump();
+    });
+  });
+
   const moveLeft = () => {
     setMoving(true);
     setDirection(directions.left);
-    console.log(translateX);
     if (translateX > 0) {
       setTranslateX(direc => direc - 5);
     }
@@ -100,7 +117,6 @@ const App = () => {
   const startJumping = useCallback(toValue => {
     const avacedX = direction === directions.right ? 30 : -30;
     setTranslateY(toValue);
-    // console.log(translateX);
     if (translateX < widthScreen && translateX >= 0) {
       setTranslateX(x => x + avacedX);
     }
@@ -184,9 +200,19 @@ const App = () => {
       <View style={styles.sky}>
         <View style={styles.toptext}>
           <Box title="MARIO" value="0" />
-          <Box title="WORLD" value="1-1" />
-          <Box title="TIME" value="9999" />
+          <Box title="TRUMPY" value="1" />
+          {/* <Box title="TIME" value="9999" /> */}
         </View>
+        <Animated.Image
+          style={{
+            ...styles.trumpCharacter,
+            transform: [
+              {translateX: translateXTrump},
+              ...styles.trumpCharacter.transform,
+            ],
+          }}
+          source={require('./app/assets/images/trump.png')}
+        />
         {renderCharacter()}
       </View>
       <View style={styles.grass} />
@@ -278,6 +304,15 @@ const styles = StyleSheet.create({
   },
   marioCharacter: {
     // position: 'absolute',
+  },
+  trumpCharacter: {
+    // backgroundColor: 'red',
+    position: 'absolute',
+    top: 90,
+    resizeMode: 'center',
+    width: 150,
+    height: 200,
+    transform: [{rotateX: '180deg'}],
   },
 });
 
